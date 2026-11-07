@@ -1,74 +1,81 @@
-# Kocaeli Haber Haritası 🗺️
+# 🗺️ Kocaeli News Map
 
-Kocaeli iline ait haberleri otomatik olarak toplayan, kategorize eden ve interaktif bir harita üzerinde görselleştiren full-stack web uygulaması.
+A full-stack web application that automatically collects local news from Kocaeli, organizes news by category, and displays news locations on an interactive map.
 
-## 📋 Proje Hakkında
+## 📌 About the Project
 
-Bu proje, Kocaeli'deki yerel haber sitelerinden belirli kategorilerdeki (trafik kazası, yangın, elektrik kesintisi, hırsızlık, kültürel etkinlikler) haberleri otomatik olarak çekip, yapay zeka destekli benzerlik analizi ile tekilleştirerek Google Maps üzerinde konumlandıran bir sistem sunar.
+Kocaeli News Map is a web application developed for the Software Laboratory II course at Kocaeli University.
 
-**Öğrenci:** 230202013  
-**Ders:** Yazılım Laboratuvarı II  
-**Platform:** Kocaeli Üniversitesi
+The application collects news from different local news websites in Kocaeli. It focuses on five categories: traffic accidents, fires, power outages, theft, and cultural events.
 
----
+The system uses Natural Language Processing (NLP) to detect similar news articles and avoid duplicates. It also identifies news locations and displays them on Google Maps.
 
-## 🚀 Özellikler
-
-- 🔍 **Otomatik Web Scraping** — RSS feed ve Puppeteer ile birden fazla yerel haber kaynağından veri çekme
-- 🧠 **NLP Benzerlik Analizi** — `paraphrase-multilingual-MiniLM-L12-v2` modeli ile vektör tabanlı haber tekilleştirme (cosine similarity)
-- 📍 **Coğrafi Kodlama** — Google Geocoding API ve Nominatim ile haber konumlarını koordinata dönüştürme
-- 🗺️ **İnteraktif Harita** — Google Maps üzerinde kategori bazlı marker gösterimi, kümeleme ve filtreleme
-- 🌙 **Karanlık/Aydınlık Mod** — Harita ve arayüz için tema desteği
-- 📰 **Çoklu Kaynak Yönetimi** — Aynı haberi birden fazla kaynaktan takip etme
+It combines web scraping, Natural Language Processing, database management, and interactive maps in a single web application.
 
 ---
 
-## 🛠️ Teknoloji Yığını
+## 🚀 Features
+
+- **Automatic News Collection:** Collects news from multiple local websites using RSS feeds and web scraping.
+- **AI-Based Duplicate Detection:** Uses an NLP model and cosine similarity to identify similar news articles.
+- **Location Detection:** Converts news locations into geographic coordinates using Google Geocoding API and Nominatim.
+- **Interactive Map:** Displays news on Google Maps with markers, clustering, and category filters.
+- **Dark and Light Mode:** Supports different themes for the map and user interface.
+- **Multiple News Sources:** Combines information from different sources about the same event.
+
+---
+
+## 🛠️ Technologies Used
 
 ### Backend
-| Teknoloji | Kullanım Amacı |
-|-----------|----------------|
-| Node.js + Express | REST API sunucusu |
-| MongoDB + Mongoose | Haber veritabanı |
-| Puppeteer + Stealth | Dinamik sayfa scraping |
+
+| Technology | Purpose |
+|---|---|
+| Node.js & Express | REST API server |
+| MongoDB & Mongoose | Database management |
+| Puppeteer & Stealth | Web scraping |
 | Cheerio | HTML parsing |
-| @xenova/transformers | Yerel NLP modeli (embedding) |
-| Axios | HTTP istekleri |
+| @xenova/transformers | NLP and text embeddings |
+| Axios | HTTP requests |
+
+For duplicate detection, the application uses the `paraphrase-multilingual-MiniLM-L12-v2` model and cosine similarity.
 
 ### Frontend
-| Teknoloji | Kullanım Amacı |
-|-----------|----------------|
-| React 19 + Vite | SPA arayüz framework |
-| Bootstrap 5 | UI bileşen kütüphanesi |
-| Google Maps JS API | İnteraktif harita |
-| Axios | Backend ile iletişim |
+
+| Technology | Purpose |
+|---|---|
+| React 19 & Vite | Web interface |
+| Bootstrap 5 | UI design |
+| Google Maps JavaScript API | Interactive map |
+| Axios | Backend communication |
 
 ---
 
-## 📁 Proje Yapısı
+## 📁 Project Structure
 
-```
+```text
 230202013/
 ├── backend/
 │   ├── models/
-│   │   └── Haber.js          # MongoDB şema tanımı
+│   │   └── Haber.js
 │   ├── services/
-│   │   └── scraper.js        # Web scraping ve haber işleme
+│   │   └── scraper.js
 │   ├── utils/
-│   │   ├── browserHelper.js  # Puppeteer yönetimi
-│   │   ├── locationHelper.js # Geocoding ve ilçe tespiti
-│   │   └── similarityHelper.js # Embedding ve cosine similarity
+│   │   ├── browserHelper.js
+│   │   ├── locationHelper.js
+│   │   └── similarityHelper.js
 │   ├── scripts/
-│   │   └── cleanupDb.js      # Veritabanı temizleme aracı
-│   ├── .env.example          # Ortam değişkenleri şablonu
+│   │   └── cleanupDb.js
+│   ├── .env.example
 │   ├── package.json
-│   └── server.js             # Express uygulama giriş noktası
+│   └── server.js
+│
 └── frontend/
     ├── src/
-    │   ├── App.jsx            # Ana uygulama bileşeni
-    │   ├── App.css            # Özel stiller
-    │   ├── main.jsx           # React giriş noktası
-    │   └── index.css          # Global stiller
+    │   ├── App.jsx
+    │   ├── App.css
+    │   ├── main.jsx
+    │   └── index.css
     ├── public/
     ├── package.json
     └── vite.config.js
@@ -76,24 +83,41 @@ Bu proje, Kocaeli'deki yerel haber sitelerinden belirli kategorilerdeki (trafik 
 
 ---
 
-## ⚙️ Kurulum ve Çalıştırma
+## ⚙️ Installation and Setup
 
-### Gereksinimler
-- Node.js >= 18
-- MongoDB (Atlas veya yerel)
-- Google Maps API anahtarı
+### Requirements
 
-### 1. Backend Kurulumu
+Before running the project, make sure you have:
+
+- Node.js 18 or higher
+- MongoDB (local or MongoDB Atlas)
+- Google Maps API key
+
+### 1. Backend Setup
+
+Open a terminal and run:
 
 ```bash
 cd backend
 npm install
 cp .env.example .env
-# .env dosyasını kendi değerlerinizle doldurun
+```
+
+Update the `.env` file with your database connection and API keys.
+
+Start the backend server:
+
+```bash
 npm start
 ```
 
-### 2. Frontend Kurulumu
+The backend runs at:
+
+`http://localhost:5001`
+
+### 2. Frontend Setup
+
+Open another terminal and run:
 
 ```bash
 cd frontend
@@ -101,43 +125,51 @@ npm install
 npm run dev
 ```
 
-Uygulama varsayılan olarak `http://localhost:5173` adresinde çalışır.  
-Backend API varsayılan olarak `http://localhost:5001` adresinde dinler.
+Open the application in your browser:
+
+`http://localhost:5173`
 
 ---
 
-## 🔑 Ortam Değişkenleri
+## 🔑 Environment Variables
 
-`backend/.env.example` dosyasını kopyalayıp `.env` olarak adlandırın ve aşağıdaki değerleri girin:
+Create a `.env` file inside the `backend` folder using `.env.example`.
 
-| Değişken | Açıklama |
-|----------|----------|
-| `PORT` | Backend sunucu portu (varsayılan: 5001) |
-| `MONGO_URI` | MongoDB bağlantı URI'si |
-| `GOOGLE_MAPS_API_KEY` | Google Maps / Geocoding API anahtarı (backend) |
-| `GOOGLE_MAPS_FRONTEND_KEY` | Google Maps JS API anahtarı (frontend için) |
+| Variable | Description |
+|---|---|
+| `PORT` | Backend port (default: 5001) |
+| `MONGO_URI` | MongoDB connection string |
+| `GOOGLE_MAPS_API_KEY` | Google Maps and Geocoding API key |
+| `GOOGLE_MAPS_FRONTEND_KEY` | Google Maps JavaScript API key for the frontend |
 
 ---
 
 ## 📡 API Endpoints
 
-| Method | Endpoint | Açıklama |
-|--------|----------|----------|
-| GET | `/` | API durum kontrolü |
-| GET | `/api/haberler` | Haberleri filtreli listele |
-| GET | `/api/scrape/all` | Manuel scraping başlat |
-| GET | `/api/scrape/status` | Scraping durumunu sorgula |
-| GET | `/api/maps-key` | Frontend için Maps API anahtarı |
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Check API status |
+| GET | `/api/haberler` | Get news with optional filters |
+| GET | `/api/scrape/all` | Start news scraping manually |
+| GET | `/api/scrape/status` | Check scraping status |
+| GET | `/api/maps-key` | Get the frontend Maps API key |
 
-### Haberler Endpoint Parametreleri
-- `tur` — Haber türü filtresi (virgülle ayrılmış, örn: `Yangın,Trafik Kazası`)
-- `ilce` — İlçe filtresi (örn: `Gebze`)
-- `baslangicTarihi` — Başlangıç tarihi (ISO 8601)
-- `bitisTarihi` — Bitiş tarihi (ISO 8601)
+### News Filters
+
+The `/api/haberler` endpoint supports these parameters:
+
+| Parameter | Description |
+|---|---|
+| `tur` | News category (supports multiple categories) |
+| `ilce` | District name (e.g., Gebze) |
+| `baslangicTarihi` | Start date (ISO 8601) |
+| `bitisTarihi` | End date (ISO 8601) |
 
 ---
 
-## 🗞️ Desteklenen Haber Kaynakları
+## 📰 Supported News Sources
+
+The application collects news from five local news websites:
 
 - Özgür Kocaeli
 - Çağdaş Kocaeli
@@ -147,12 +179,14 @@ Backend API varsayılan olarak `http://localhost:5001` adresinde dinler.
 
 ---
 
-## 📊 Haber Kategorileri
+## 📊 News Categories
 
-| Kategori | İkon |
-|----------|------|
-| Trafik Kazası | 🚗 |
-| Yangın | 🔥 |
-| Elektrik Kesintisi | ⚡ |
-| Hırsızlık | 🦹 |
-| Kültürel Etkinlikler | 🎭 |
+| Category | Icon |
+|---|---|
+| Traffic Accidents | 🚗 |
+| Fires | 🔥 |
+| Power Outages | ⚡ |
+| Theft | 🦹 |
+| Cultural Events | 🎭 |
+
+
