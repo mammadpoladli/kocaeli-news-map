@@ -1,0 +1,238 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage[utf8]{inputenc}
+\usepackage[turkish]{babel}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{enumitem}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\lstset{
+    basicstyle=\ttfamily\scriptsize,
+    breaklines=true,
+    frame=single,
+    numbers=left,
+    numberstyle=\tiny,
+    tabsize=2
+}
+
+\begin{document}
+
+    \title{Yazılım Laboratuvarı – II {\\}
+        PROJE 1 RAPOR}
+
+    \author{\IEEEauthorblockN{Mammad Poladl{\i}}
+    \IEEEauthorblockA{\textit{}
+    230202013@kocaeli.edu.tr}
+    }
+
+    \maketitle
+
+    \begin{abstract}
+        Günümüzde şehir yaşamındaki dinamik olayların hızlı bir şekilde takip edilmesi, hem yerel yönetimler hem de vatandaşlar için büyük önem taşımaktadır. Bu proje kapsamında, Kocaeli'deki yerel haber sitelerinden (Çağdaş Kocaeli, Özgür Kocaeli, vb.) otomatik olarak veri toplayan, bu verileri analiz edip Google Haritalar üzerinde gösteren web tabanlı bir "Kentsel Haber İzleme Sistemi" geliştirilmiştir. Sistem; haberleri Trafik Kazası, Yangın, Elektrik Kesintisi, Hırsızlık ve Kültürel Etkinlikler olmak üzere beş farklı kategoriye otomatik olarak ayırmaktadır. Aynı olayın farklı sitelerde tekrar paylaşılması ihtimaline karşı yapay zeka tabanlı bir dil modeli (MiniLM-L12-v2) kullanılarak haberlerin birbirine benzerliği ölçülmüş ve aynı haberler başarılı bir şekilde birleştirilmiştir. Haber metinlerindeki adres bilgileri Doğal Dil İşleme (NLP) yöntemleriyle saptanmış ve bu adresler Google Geocoding API sayesinde harita üzerindeki kesin konumlara çevrilmiştir. Elde edilen veriler kullanıcılara dinamik ve filtrelenebilir bir harita arayüzü ile sunularak, konum tabanlı gelişmiş kentsel veri analizine olanak sağlanmıştır.
+    \end{abstract}
+
+    \begin{IEEEkeywords}
+        Web Scraping, Do{\u g}al Dil {\.I}{\c s}leme, Derin {\"O}{\u g}renme, Metin Benzerli{\u g}i, Konum {\c C}{\i}kar{\i}m{\i}, Veri G{\"o}rselle{\c s}tirme, Harita Entegrasyonu, Haber S{\i}n{\i}fland{\i}rma, MERN Stack
+    \end{IEEEkeywords}
+
+    \section{Giri{\c s}}
+    Kentsel olaylar{\i}n (trafik kazas{\i}, yang{\i}n, sokak h{\i}rs{\i}zl{\i}klar{\i}, elektrik kesintisi vb.) takibi i{\c c}in yerel medya kaynaklar{\i}ndaki bilgilerin farkl{\i} platformlarda da{\u g}{\i}n{\i}k bulunmas{\i}, tek merkezden g{\"u}ncel bilgi al{\i}m{\i}n{\i} zorla{\c s}t{\i}rmaktad{\i}r.
+
+    Bu çalışmada, Kocaeli sınırları içindeki önemli kentsel gelişmeleri ve asayiş olaylarını tek bir ekran üzerinden, harita odaklı şekilde göstermeyi sağlayan bir sistem geliştirilmiştir. Projenin temel amacı; haber sitelerinden tek bir kontrolle otomatik veri toplayan, bu haberleri yapay zeka ve kelime analizleriyle türüne göre ayıran, benzer kopya haberleri birleştiren ve haberde geçen olay yerlerini haritada doğru noktalara yerleştiren tamamen bağımsız bir mekanizma kurmaktır.
+
+    Proje kapsam{\i}nda be{\c s} zorunlu yerel haber kayna{\u g}{\i}ndan ({\c C}a{\u g}da{\c s} Kocaeli, {\"O}zg{\"u}r Kocaeli, Ses Kocaeli, Yeni Kocaeli ve Bizim Yaka) veri {\c c}ekilmekte; {\c c}ekilen veriler {\"u}zerinde anahtar kelime tabanl{\i} s{\i}n{\i}fland{\i}rma, embedding tabanl{\i} metin benzerli{\u g}i analizi ve regex tabanl{\i} konum {\c c}{\i}kar{\i}m{\i} uygulanmaktad{\i}r. Elde edilen yap{\i}land{\i}r{\i}lm{\i}{\c s} veriler MongoDB'de saklanarak, React.js tabanl{\i} aray{\"u}z {\"u}zerinden Google Maps API entegrasyonuyla kullan{\i}c{\i}ya sunulmaktad{\i}r.
+
+    \section{Sistem Mimarisi ve Kullan{\i}lan Teknolojiler}
+
+    {\"O}nerilen sistem, veri toplama katman{\i} (Back-End) ve kullan{\i}c{\i} etkile{\c s}im katman{\i} (Front-End) olmak {\"u}zere iki ana bile{\c s}enden olu{\c s}maktad{\i}r. Katmanlar aras{\i} ileti{\c s}im RESTful API {\c c}a{\u g}r{\i}lar{\i} vas{\i}tas{\i}yla ger{\c c}ekle{\c s}mektedir. Tablo~\ref{tab:teknolojiler} sistemde kullan{\i}lan temel teknolojileri {\"o}zetlemektedir.
+
+    \begin{table}[h]
+        \caption{Sistemde Kullan{\i}lan Teknolojiler}
+        \label{tab:teknolojiler}
+        \centering
+        \begin{tabular}{|p{2.2cm}|p{2.2cm}|p{3cm}|}
+            \hline
+            \textbf{Katman} & \textbf{Teknoloji} & \textbf{Kullan{\i}m Amac{\i}} \\ \hline
+            Veritaban{\i} & MongoDB & NoSQL belge tabanl{\i} depolama \\ \hline
+            Arka U{\c c} & Node.js, Express.js & REST API ve scraping motoru \\ \hline
+            {\"O}n Y{\"u}z & React.js, Vite & SPA kullan{\i}c{\i} aray{\"u}z{\"u} \\ \hline
+            Stil & Bootstrap 5 & Duyarl{\i} tasar{\i}m bile{\c s}enleri \\ \hline
+            Harita & Google Maps API & Co{\u g}rafi g{\"o}rselle{\c s}tirme \\ \hline
+            NLP & MiniLM-L12-v2 & Metin embedding {\"u}retimi \\ \hline
+            Scraping & Axios, Cheerio & HTTP istekleri ve DOM analizi \\ \hline
+            Bot A{\c s}ma & Puppeteer Stealth & Cloudflare korumas{\i}n{\i} a{\c s}ma \\ \hline
+        \end{tabular}
+    \end{table}
+
+    \subsection{Veri Taban{\i} Tasar{\i}m{\i}}
+    Haber metinleri gibi standart bir kalıbı ve uzunluğu olmayan verilerin daha rahat saklanması amacıyla MongoDB veri tabanı kullanılmıştır. Her bir haber belgesi (document) şu alanlardan oluşmaktadır: baslik, icerik, ozet, haber türü (beş ana kategori), tarih, haberi yayınlayan kaynaklar, haberin konumu (harita koordinatları dahil) ve yapay zeka sayısal karşılığı (embedding). Veri tabanı sorgularının daha hızlı çalışması için sık aranan alanlara (örneğin tarih, haber türü ve lokasyon) indeksler eklenerek sistemin tepki süresi hızlandırılmıştır.
+
+    Ayrıca, harita konum aramalarından gelen sonuçların (geocoding) tekrar tekrar sorgulanmasını ve API kotasının boşa harcanmasını engellemek için Geocache adında geçici bir bellek tablosu tasarlanmıştır. Her adres sadece bir kere sorgulanmakta, bir sonraki sefere sistemin kendi belleğinden saniyeler içinde getirilmektedir.
+
+    \subsection{Arka U{\c c} Mimarisi}
+    Arka u{\c c} Node.js {\"u}zerinde Express.js {\c c}er{\c c}evesiyle geli{\c s}tirilmi{\c s}tir. Sunucu ba{\c s}lang{\i}c{\i}nda MongoDB ba{\u g}lant{\i}s{\i} kurulmakta, indeksler senkronize edilmekte ve periyodik scraping zamanlay{\i}c{\i}s{\i} (6 saatte bir) etkinle{\c s}tirilmektedir. E{\c s}zamanl{\i} scraping isteklerinin {\c c}ak{\i}{\c s}mas{\i}n{\i} {\"o}nlemek i{\c c}in \textit{mutex} mekanizmas{\i} uygulanm{\i}{\c s}t{\i}r.
+
+    RESTful API u{\c c} noktalar{\i} {\c s}u {\c s}ekilde tasarlanm{\i}{\c s}t{\i}r:
+    \begin{itemize}[noitemsep]
+    \item \texttt{GET /api/haberler} --- Filtrelenmi{\c s} haber listesi (t{\"u}r, il{\c c}e, tarih aral{\i}{\u g}{\i})
+    \item \texttt{GET /api/scrape/all?gun=N} --- Manuel scraping tetikleyici
+    \item \texttt{GET /api/scrape/status} --- Scraping durum sorgulama
+    \item \texttt{GET /api/maps-key} --- Google Maps API anahtar{\i}n{\i}n g{\"u}venli sunumu
+    \end{itemize}
+
+    Google Maps API anahtar{\i}, g{\"u}venlik gereksinimi do{\u g}rultusunda frontend kaynak koduna g{\"o}m{\"u}lmemi{\c s}; bunun yerine backend \texttt{.env} dosyas{\i}ndan {\c c}al{\i}{\c s}ma zaman{\i}nda sunulmaktad{\i}r.
+
+    \section{Web Scraping Mod{\"u}l{\"u}}
+
+    Sistem, proje isterlerinde zorunlu k{\i}l{\i}nan be{\c s} yerel haber kayna{\u g}{\i}ndan yap{\i}land{\i}r{\i}labilir zaman aral{\i}{\u g}{\i}ndaki (1--30 g{\"u}n) haber verilerini otomatik olarak {\c c}ekmektedir. Scraping stratejisi sitelerin teknik altyap{\i}s{\i}na g{\"o}re farkl{\i}la{\c s}t{\i}r{\i}lm{\i}{\c s}t{\i}r:
+
+    \begin{itemize}[noitemsep]
+    \item \textbf{RSS Tabanl{\i} ({\"O}zg{\"u}r Kocaeli, {\c C}a{\u g}da{\c s} Kocaeli, Ses Kocaeli):} Bu siteler Cloudflare g{\"u}venlik duvar{\i} kulland{\i}{\u g}{\i}ndan, yaln{\i}zca RSS beslemeleri {\"u}zerinden veri {\c c}ekilmektedir. \textit{Cheerio} ile XML modu kullan{\i}larak RSS 2.0 ve Atom formatlar{\i} desteklenmektedir.
+    \item \textbf{Hibrit --- RSS + Web Scraping (Yeni Kocaeli, Bizim Yaka):} {\"O}nce RSS beslemesi i{\c s}lenip daha sonra web scraping ile ana sayfa ve alt sayfa ba{\u g}lant{\i}lar{\i} taranarak kapsam geni{\c s}letilmektedir.
+    \end{itemize}
+
+    \subsection{{\.I}stek Y{\"o}netimi ve E{\c s}zamanl{\i}l{\i}k}
+    HTTP istekleri \textit{Axios} k{\"u}t{\"u}phanesi ile ger{\c c}ekle{\c s}tirilmekte, 8 saniyelik zaman a{\c s}{\i}m{\i} ve taray{\i}c{\i} benzeri HTTP ba{\c s}l{\i}klar{\i} (User-Agent, Accept-Language, Referer) ayarlanmaktad{\i}r. Sunucu kaynaklar{\i}n{\i}n verimli kullan{\i}lmas{\i} ve hedef sitelerin a{\c s}{\i}r{\i} y{\"u}klenmemesi i{\c c}in kuyruk tabanl{\i} bir \textit{Concurrency Pool} yap{\i}s{\i} tasarlanm{\i}{\c s}t{\i}r. RSS i{\c s}leme i{\c c}in 3, web scraping i{\c c}in 2 e{\c s}zamanl{\i} g{\"o}rev limiti uygulanmaktad{\i}r. Bu yap{\i} \texttt{Promise} tabanl{\i} bir kuyruk olarak implemente edilmi{\c s} olup, aktif g{\"o}rev say{\i}s{\i} limite ula{\c s}t{\i}{\u g}{\i}nda yeni g{\"o}revler beklemeye al{\i}nmaktad{\i}r.
+
+    \subsection{Cloudflare Korumas{\i}n{\i} A{\c s}ma}
+    Cloudflare korumal{\i} sitelerde standart HTTP istekleri ba{\c s}ar{\i}s{\i}z oldu{\u g}unda (HTTP 403 veya 503 yan{\i}tlar{\i}), \textit{Puppeteer-Extra-Plugin-Stealth} devreye girmektedir. Bu mod{\"u}l Chromium taray{\i}c{\i}s{\i}n{\i} ba{\c s}s{\i}z (headless) modda {\c c}al{\i}{\c s}t{\i}rarak JavaScript challenge mekanizmalar{\i}n{\i} a{\c s}maktad{\i}r. Performans optimizasyonu kapsam{\i}nda g{\"o}rsel, stil sayfas{\i}, font ve reklam istekleri istek yakalama (request interception) ile iptal edilmekte; taray{\i}c{\i} pencere boyutu 1280x720 piksele d{\"u}{\c s}{\"u}r{\"u}lmekte ve JavaScript bellek limiti 256 MB ile s{\i}n{\i}rland{\i}r{\i}lmaktad{\i}r.
+
+    \subsection{Veri {\"O}n {\.I}{\c s}leme ve Temizleme}
+    Haber sitelerinden toplanan ham web sayfası verilerindeki gereksiz kısımlar (menüler, alt sayfa panelleri, reklamlar, sosyal medya butonları ve yorum kısımları) 27 farklı sistem kuralıyla analiz edilip tamamen temizlenmektedir. Karışık ve karmaşık yapılara sahip haber metinleri arasına sızmış olan gizli boşluklardan, bozuk karakterlerden ve HTML kalıntılarından arındırılarak okunabilir, pürüzsüz ve saf metinler haline getirilmektedir.
+
+    Kocaeli d{\i}{\c s}{\i} haberlerin filtrelenmesi i{\c c}in 80'den fazla il ve {\"u}lke ad{\i}n{\i} i{\c c}eren ``Ulusal Kara Liste'' algoritmas{\i} uygulanmaktad{\i}r. Haber ba{\c s}l{\i}{\u g}{\i}nda T{\"u}rkiye'nin di{\u g}er illerine ait isimler veya uluslararas{\i} anahtar kelimeler tespit edildi{\u g}inde ilgili haber i{\c s}lem hatt{\i}ndan {\c c}{\i}kar{\i}lmaktad{\i}r.
+
+    \section{Veri Analizi ve Y{\"o}ntemler}
+
+    \subsection{Haber S{\i}n{\i}fland{\i}rma Algoritmas{\i}}
+    Her haber metni {\"u}zerinde \textbf{Anahtar Kelime ve Skor {\c C}arpan{\i}} tabanl{\i} bir s{\i}n{\i}fland{\i}rma algoritmas{\i} uygulanmaktad{\i}r. Tablo~\ref{tab:kelimeler} kategorilere ait baz{\i} anahtar kelimeleri {\"o}zetlemektedir.
+
+    \begin{table}[h]
+        \caption{Kategorilendirmede Kullan{\i}lan Anahtar Kelimeler ({\"O}rnek)}
+        \label{tab:kelimeler}
+        \centering
+        \begin{tabular}{|p{2.2cm}|p{5.3cm}|}
+            \hline
+            \textbf{Kategori} & \textbf{{\"O}ne {\c C}{\i}kan Anahtar Kelimeler} \\ \hline
+            Trafik Kazas{\i} & trafik kazas{\i}, zincirleme kaza, {\c s}arampole, takla att{\i}, {\"o}l{\"u}ml{\"u} kaza \\ \hline
+            Yang{\i}n & yang{\i}n {\c c}{\i}kt{\i}, alevlere, itfaiye, s{\"o}nd{\"u}r{\"u}ld{\"u}, fabrika yang{\i}n{\i} \\ \hline
+            Elektrik Kesintisi & elektrik kesintisi, seda{\c s} duyurdu, karanl{\i}kta kald{\i}, planl{\i} kesinti \\ \hline
+            H{\i}rs{\i}zl{\i}k & h{\i}rs{\i}zl{\i}k operasyonu, soygun, gasp, kapka{\c c}, h{\i}rs{\i}zl{\i}k {\c s}ebekesi \\ \hline
+            K{\"u}lt{\"u}rel Etkinlikler & konser, festival, tiyatro, sergi, m{\"u}zik, gala, sempozyum \\ \hline
+        \end{tabular}
+    \end{table}
+
+    Algoritman{\i}n {\c c}al{\i}{\c s}ma ad{\i}mlar{\i} a{\c s}a{\u g}{\i}da a{\c c}{\i}klanm{\i}{\c s}t{\i}r:
+
+    \begin{enumerate}[noitemsep]
+    \item \textbf{Metin Haz{\i}rlama:} Ba{\c s}l{\i}k ve i{\c c}erik metni T{\"u}rk{\c c}e lokale duyarl{\i} k{\"u}{\c c}{\"u}k harfe d{\"o}n{\"u}{\c s}t{\"u}r{\"u}l{\"u}r. {\.I}{\c c}erik ilk 2000 karakter ile s{\i}n{\i}rland{\i}r{\i}l{\i}r.
+    \item \textbf{Ba{\c s}l{\i}k A{\u g}{\i}rl{\i}kland{\i}rma:} Haberin ba{\c s}l{\i}{\u g}{\i} 6 kez tekrarlanarak birle{\c s}ik metne dahil edilir, b{\"o}ylece ba{\c s}l{\i}ktaki anahtar kelimeler daha y{\"u}ksek a{\u g}{\i}rl{\i}k kazan{\i}r.
+    \item \textbf{Skor Hesaplama:} Her kategori i{\c c}in iki seviyeli anahtar kelime listesi bulunur: \textit{a{\u g}{\i}rl{\i}kl{\i}} kelimeler ({\c c}arpan: 4) ve \textit{normal} kelimeler ({\c c}arpan: 1). Regex tabanl{\i} tam kelime e{\c s}le{\c s}mesi ile T{\"u}rk{\c c}e ek morfolojisi desteklenmektedir.
+    \item \textbf{Negatif Kal{\i}p Cezas{\i}:} ``yang{\i}n tatbikat{\i}'', ``trafik e{\u g}itimi'', ``elektrikli ara{\c c}'' gibi yan{\i}lt{\i}c{\i} ba{\u g}lamlar tespit edildi{\u g}inde ilgili kategorinin skorundan 6 puan d{\"u}{\c s}{\"u}r{\"u}l{\"u}r.
+    \item \textbf{{\"O}ncelik {\c C}{\"o}z{\"u}mleme:} E{\c s}it skorda birden fazla kategori varsa, {\"o}nceden tan{\i}ml{\i} {\"o}ncelik s{\i}ras{\i}na (Yang{\i}n $>$ Trafik $>$ Elektrik $>$ H{\i}rs{\i}zl{\i}k $>$ K{\"u}lt{\"u}rel) g{\"o}re se{\c c}im yap{\i}l{\i}r. Minimum skor e{\c s}i{\u g}i 2 olarak belirlenmi{\c s} olup, bu e{\c s}i{\u g}in alt{\i}nda kalan haberler s{\i}n{\i}fland{\i}r{\i}lmaz.
+    \end{enumerate}
+
+    \subsection{Metin Benzerli{\u g}i ve Haber Tekille{\c s}tirme}
+    Aynı olayın farklı haber sitelerinde farklı cümlelerle yayınlanması durumunu (kopya haberleri) tespit edip harita üzerinde tek tıkla birleştirmek amacıyla, derin öğrenme altyapısına sahip özel bir kelime-anlam analiz modeli (yapay zeka) geliştirilmiştir.
+
+    \subsubsection{Embedding Modeli}
+    Kopya haberlerin analizinde, yalnızca kelimelerin metinde kaç defa geçtiğine bakan basit ve eski yöntemlerin (örneğin TF-IDF) cümlenin gerçek anlamını kaçırabildiği görülmüştür. Bu yüzden, bizzat Türkçe cümlelerin taşıdığı kavramsal anlama ve olay bağlamına odaklanabilen gelişmiş bir dil modeli (paraphrase-multilingual-MiniLM-L12-v2) tercih edilmiştir~\cite{reimers2019sentence}. Bu model, kelimelerin yerleri farklı olsa bile "aynı olayı anlattıklarını" saptama yeteneğine sahiptir. Model harici bir hizmete bağımlı olmadan sistemin kendi işlemcisi üzerinde güvenli ve hızlı bir şekilde çalışmaktadır.
+
+    \subsubsection{Benzerlik Hesaplama}
+    Her haberin ba{\c s}l{\i}k ve i{\c c}erik metni (ilk 1800 karakter) modele verilerek mean pooling ve L2 normalizasyon ile c{\"u}mle seviyesi embedding elde edilmektedir. {\.I}ki haber vekt{\"o}r{\"u} aras{\i}ndaki kosin{\"u}s benzerli{\u g}i Denklem~\ref{eq:cosine}'de g{\"o}sterildi{\u g}i {\c s}ekilde hesaplanmaktad{\i}r:
+
+    \begin{equation}
+        \label{eq:cosine}
+        \text{sim}(\vec{A}, \vec{B}) = \frac{\vec{A} \cdot \vec{B}}{||\vec{A}|| \times ||\vec{B}||} \times 100
+    \end{equation}
+
+    Benzerlik skoru \%85 ve {\"u}zeri olan haberler m{\"u}kerrer olarak kabul edilmektedir. M{\"u}kerrer haber tespit edildi{\u g}inde yeni bir dok{\"u}man olu{\c s}turulmak yerine, mevcut haberin \texttt{kaynaklar} dizisine yeni kaynak bilgisi eklenmektedir. B{\"o}ylece ayn{\i} olay{\i}n farkl{\i} medya kurulu{\c s}lar{\i}ndaki yans{\i}malar{\i} tek bir noktada birle{\c s}tirilmektedir.
+
+    \subsection{Konum Bilgisi {\c C}{\i}kar{\i}m{\i}}
+    Haber metinlerinin içinden olayın gerçekleştiği tam adresi bulmak ve harita koordinatlarına çevirmek projenin en zorlu adımlarından biridir. Sistemin nokta atışı yer tespiti yapabilmesi için şu pratik adımlar uygulanmaktadır:
+
+    \begin{enumerate}[noitemsep]
+    \item \textbf{{\"O}zel Lokasyon E{\c s}leme:} ``Sekapark'', ``Umuttepe Kamp{\"u}s{\"u}'', ``D-100'', ``Osmangazi K{\"o}pr{\"u}s{\"u}'' gibi 40'tan fazla bilinen nokta statik koordinat tablolar{\i}ndan do{\u g}rudan {\c c}{\"o}z{\"u}mlenmektedir.
+    \item \textbf{{\.I}l{\c c}e Tespiti:} 12~Kocaeli il{\c c}esinin ad{\i} ve bunlara ba{\u g}l{\i} 120'den fazla semt/mahalle ad{\i} ba{\c s}l{\i}k ve i{\c c}erik metninde aranmaktad{\i}r. Ba{\c s}l{\i}kta bulunan e{\c s}le{\c s}meler 5 kat a{\u g}{\i}rl{\i}kla puanlanmaktad{\i}r.
+    \item \textbf{Adres Bile{\c s}eni {\c C}{\i}karma:} Regex kal{\i}plar{\i} ile ``Mahallesi'', ``Caddesi'', ``Bulvar{\i}'', ``Kav{\c s}a{\u g}{\i}'', ``Mevkii'' gibi T{\"u}rk{\c c}e adres etiketleri tespit edilerek yap{\i}land{\i}r{\i}lm{\i}{\c s} adres dizgesi olu{\c s}turulmaktad{\i}r.
+    \item \textbf{Adres Arama (Geocoding):} Tespit edilen adres kalıpları önce sistemin kendi belleğinde (Geocache) kontrol edilir. Eğer sistemde yüklü değilse sırasıyla Google Haritalar Servisi ve ardından OpenStreetMap servislerinden kordinat talep edilir. Elde edilen kordinatın gerçekten Kocaeli il sınırları içinde olup olmadığı ayrıca matematiksel olarak onaylanır.
+    \item \textbf{Varsay{\i}lan {\.I}l{\c c}e Merkezi:} Eğe haberde sokak/mahalle bulunamazsa veya verilen adres harita sisteminde hatalı çıkarsa, olay o ilçenin kendi merkez koordinatlarına yerleştirilir. Haritada aynı saatte aynı ilçede gerçekleşen iki adresiz haberin üst üste çakışmasını engellemek için iğnelere (pinlere) birbirinden biraz farklı ofset değerleri verilir.
+    \end{enumerate}
+
+    \section{Kullan{\i}c{\i} Aray{\"u}z{\"u} ve Harita G{\"o}rselle{\c s}tirmesi}
+
+    {\"O}n y{\"u}z bile{\c s}eni React.js ve Vite geli{\c s}tirme ortam{\i} ile tek sayfa uygulama (SPA) mimarisinde tasarlanm{\i}{\c s}t{\i}r. Aray{\"u}z iki ana b{\"o}l{\"u}mden olu{\c s}maktad{\i}r: sol taraftaki kontrol paneli ve sa{\u g} taraftaki interaktif harita alan{\i}.
+
+    \subsection{Kontrol Paneli}
+
+    Kontrol panelinde {\"u}{\c c} ana b{\"o}l{\"u}m bulunmaktad{\i}r:
+
+    \begin{itemize}[noitemsep]
+    \item \textbf{Veri {\c C}ekme:} Kullan{\i}c{\i} 1/3/7/14/30 g{\"u}nl{\"u}k zaman aral{\i}klar{\i}ndan birini se{\c c}erek scraping i{\c s}lemini manuel olarak tetikleyebilmektedir. {\.I}{\c s}lem s{\"u}resince spinner animasyonu g{\"o}sterilmekte ve e{\c s}zamanl{\i} istekler HTTP 429 durum koduyla reddedilmektedir.
+    \item \textbf{Filtreleme:} Olay t{\"u}r{\"u} (5 kategori), il{\c c}e (12 il{\c c}e), ba{\c s}lang{\i}{\c c} ve biti{\c s} tarihi baz{\i}nda dinamik filtreleme yap{\i}labilmektedir. Filtre de{\u g}i{\c s}iklikleri 400 ms debounce mekanizmas{\i}yla i{\c s}lenmekte, gereksiz API {\c c}a{\u g}r{\i}lar{\i} {\"o}nlenmektedir.
+    \item \textbf{Kategori Da{\u g}{\i}l{\i}m{\i}:} Filtrelenen haberlerin kategori baz{\i}nda say{\i}sal {\"o}zeti renkli g{\"o}stergelerle sunulmaktad{\i}r.
+    \end{itemize}
+
+    Panel alt{\i}nda kayd{\i}r{\i}labilir bir haber ak{\i}{\c s}{\i} bulunmakta; her haber kart{\i}nda tarih, kategori, kaynak say{\i}s{\i}, ba{\c s}l{\i}k, {\"o}zet ve konum bilgisi g{\"o}sterilmektedir. Karta t{\i}kland{\i}{\u g}{\i}nda harita otomatik olarak ilgili konuma odaklanmaktad{\i}r.
+
+    \subsection{Harita G{\"o}rselle{\c s}tirmesi}
+    Google Maps API kullan{\i}larak olu{\c s}turulan haritada her haber, kategorisine {\"o}zg{\"u} renkli SVG marker'lar ile i{\c s}aretlenmektedir~({\"O}rn: Yang{\i}n = turuncu/alev emojisi, Kaza = k{\i}rm{\i}z{\i}/ara{\c c} emojisi). Marker'a t{\i}kland{\i}{\u g}{\i}nda a{\c c}{\i}lan InfoWindow bile{\c s}eninde haber ba{\c s}l{\i}{\u g}{\i}, kategorisi, tarihi, konum bilgisi, {\"o}zeti ve her kaynak i{\c c}in ayr{\i} ``Habere Git'' ba{\u g}lant{\i}lar{\i} listelenmektedir. Birden fazla kaynaktan do{\u g}rulanan haberler InfoWindow'da liste halinde g{\"o}sterilmektedir.
+
+    Haritan{\i}n sa{\u g} alt k{\"o}{\c s}esinde olay t{\"u}rlerinin renk ve emoji kar{\c s}{\i}l{\i}klar{\i}n{\i} g{\"o}steren bir lejant paneli konumland{\i}r{\i}lm{\i}{\c s}t{\i}r. Harita {\"o}zel bir stil {\c s}emas{\i}yla render edilmekte; i{\c s} yeri etiketleri ve toplu ta{\c s}{\i}ma etiketleri gizlenerek, su y{\"u}zeyleri ve park alanlar{\i} ayr{\i} renk paletleriyle vurgulanmaktad{\i}r.
+
+    \section{Sistem Performans Optimizasyonlar{\i}}
+
+    Sistemin verimli {\c c}al{\i}{\c s}mas{\i} i{\c c}in {\c c}e{\c s}itli optimizasyon stratejileri uygulanm{\i}{\c s}t{\i}r:
+
+    \begin{itemize}[noitemsep]
+    \item \textbf{Geocache Sistemi:} Her ba{\c s}ar{\i}l{\i} geocoding sonucu MongoDB'ye kaydedilerek, ayn{\i} adres dizgesi i{\c c}in tekrar API {\c c}a{\u g}r{\i}s{\i} yap{\i}lmas{\i} {\"o}nlenmektedir.
+    \item \textbf{URL Set Tabanl{\i} Deduplikasyon:} Daha {\"o}nce i{\c s}lenmi{\c s} URL'ler \texttt{Set} veri yap{\i}s{\i}nda tutularak ayn{\i} ba{\u g}lant{\i}n{\i}n tekrar {\c c}ekilmesi engellenmektedir.
+    \item \textbf{Embedding {\"O}nbellek:} Son 300 haberin embedding vekt{\"o}r{\"u} belle{\u g}e y{\"u}klenerek, her yeni haber i{\c c}in t{\"u}m veri taban{\i}n{\i}n taranmas{\i} yerine bellekteki kopyayla kar{\c s}{\i}la{\c s}t{\i}rma yap{\i}lmaktad{\i}r.
+    \item \textbf{{\.I}stek Yakalama (Request Interception):} Puppeteer'da g{\"o}rsel, stil, font ve analitik istekleri iptal edilerek bant geni{\c s}li{\u g}i ve bellek kullan{\i}m{\i} d{\"u}{\c s}{\"u}r{\"u}lmektedir.
+    \item \textbf{Scraping Mutex:} Ayn{\i} anda birden fazla scraping i{\c s}leminin {\c c}al{\i}{\c s}mas{\i}n{\i} {\"o}nleyen kilit mekanizmas{\i} ile sistem kararl{\i}l{\i}{\u g}{\i} sa{\u g}lanmaktad{\i}r.
+    \end{itemize}
+
+    \section{Sonu{\c c} ve De{\u g}erlendirme}
+
+    Bu projede, da{\u g}{\i}n{\i}k yerel Kocaeli haber kaynaklar{\i}ndan otonom ara{\c c}larla veri {\c c}ekilen, anahtar kelime ve skor tabanl{\i} algoritmalarla s{\i}n{\i}fland{\i}r{\i}lan, Sentence-BERT mimarisinde {\"o}nceden e{\u g}itilmi{\c s} derin {\"o}{\u g}renme modeli (paraphrase-multilingual-MiniLM-L12-v2) ile embedding tabanl{\i} benzerlik analizi yap{\i}larak tekille{\c s}tirilen ve geocoding ile haritada g{\"o}rselle{\c s}tirilen tam donan{\i}ml{\i} bir kentsel MERN tabanl{\i} bilgi sistemi geli{\c s}tirilmi{\c s}tir.
+
+    Geli{\c s}tirilen sistem be{\c s} farkl{\i} haber kayna{\u g}{\i}ndan ba{\c s}ar{\i}l{\i} {\c s}ekilde veri toplamakta, haberleri be{\c s} kategoride otomatik s{\i}n{\i}fland{\i}rmakta ve 12 Kocaeli il{\c c}esi genelinde konum bilgisi {\c c}{\i}kartarak Google Maps {\"u}zerinde interaktif bir g{\"o}rselle{\c s}tirme sunmaktad{\i}r. Embedding tabanl{\i} tekille{\c s}tirme mod{\"u}l{\"u} sayesinde ayn{\i} olaya ait farkl{\i} kaynaklardan gelen haberler tek bir noktada birle{\c s}tirilmekte olup, bilgi g{\"u}venilirli{\u g}i {\c c}oklu kaynak do{\u g}rulamas{\i}yla art{\i}r{\i}lmaktad{\i}r.
+
+    Gelecek {\c c}al{\i}{\c s}malarda, anahtar kelime tabanl{\i} s{\i}n{\i}fland{\i}rma yerine transformer tabanl{\i} derin {\"o}{\u g}renme s{\i}n{\i}fland{\i}r{\i}c{\i}lar{\i}n{\i}n (BERT-fine-tuned) entegrasyonu, ger{\c c}ek zamanl{\i} bildirim sistemi ve mobil uygulama deste{\u g}i ile sistemin kapsam{\i} geni{\c s}letilebilir.
+
+    \begin{thebibliography}{00}
+        \bibitem{reimers2019sentence}
+        N.~Reimers ve I.~Gurevych, ``Sentence-BERT: Sentence embeddings using Siamese BERT-networks,'' \textit{Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing}, Hong Kong, 2019, ss.~3982--3992.
+
+        \bibitem{devlin2019bert}
+        J.~Devlin, M.~W.~Chang, K.~Lee ve K.~Toutanova, ``BERT: Pre-training of deep bidirectional transformers for language understanding,'' \textit{Proceedings of NAACL-HLT}, Minneapolis, 2019, ss.~4171--4186.
+
+        \bibitem{mongoose}
+        Mongoose, ``Elegant MongoDB object modeling for Node.js,'' \url{https://mongoosejs.com/}, Erisim tarihi: Mart 2026.
+
+        \bibitem{react}
+        Meta Platforms, ``React -- A JavaScript library for building user interfaces,'' \url{https://reactjs.org/}, Erisim tarihi: Mart 2026.
+
+        \bibitem{puppeteer}
+        Google Chrome Labs, ``Puppeteer -- Headless Chrome Node.js API,'' \url{https://pptr.dev/}, Erisim tarihi: Mart 2026.
+
+        \bibitem{cheerio}
+        Cheerio.js, ``Fast, flexible and lean implementation of core jQuery designed specifically for the server,'' \url{https://cheerio.js.org/}, Erisim tarihi: Mart 2026.
+
+        \bibitem{googlemaps}
+        Google Inc., ``Google Maps Platform Documentation,'' \url{https://developers.google.com/maps}, Erisim tarihi: Mart 2026.
+
+        \bibitem{xenova}
+        Xenova, ``Transformers.js -- Run Transformers in your browser,'' \url{https://huggingface.co/docs/transformers.js}, Erisim tarihi: Mart 2026.
+    \end{thebibliography}
+
+\end{document}
